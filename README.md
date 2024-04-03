@@ -1,4 +1,5 @@
 # qa_python
+
 test_add_nonvalid_name - проверяет невалидные названия книг
 test_set_book_genre_nameless - проверяет добавление жанра без названия 
 test_add_missing_book_in_favorites - проверяет добавление книги, отсутствующей в словаре 
