@@ -1,24 +1,92 @@
 from main import BooksCollector
+import pytest
 
-# класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
-# обязательно указывать префикс Test
-class TestBooksCollector:
+class TestBookCollector:
+#Проверки на невалидные параметры названия - слишком большое/слишком маленькое
 
-    # пример теста:
-    # обязательно указывать префикс test_
-    # дальше идет название метода, который тестируем add_new_book_
-    # затем, что тестируем add_two_books - добавление двух книг
-    def test_add_new_book_add_two_books(self):
-        # создаем экземпляр (объект) класса BooksCollector
+    @pytest.mark.parametrize ('name', ['Как перестать прокрастинировать и начать учить питон', ''])
+    def test_add_nonvalid_name(self, name):
         collector = BooksCollector()
+        collector.add_new_book(name)
+        assert len(collector.get_books_genre()) == 0
 
-        # добавляем две книги
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Что делать, если ваш кот хочет вас убить')
 
-        # проверяем, что добавилось именно две
-        # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-        assert len(collector.get_books_rating()) == 2
+#Проверка на добавление жанра книге без названия
+    def test_set_book_genre_nameless(self):
+     collector = BooksCollector()
+     name = ''
+     collector.add_new_book(name)
+     collector.set_book_genre(name, 'Комедии')
+     #assert (name, 'Комедии')  not in collector.books_genre
+     assert collector.get_book_genre(name) == None
 
-    # напиши свои тесты ниже
-    # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+    #проверка на добавление одной книги дважды
+    def test_add_new_book_add_one_book_twice(self):
+        collector = BooksCollector()
+        collector.add_new_book('Война и мир')
+        collector.add_new_book('Война и мир')
+        assert len(collector.get_books_genre()) == 1
+
+#Проверка получения жанра книги по ее имени
+
+    def test_add_book_and_set_genre(self):
+        collector = BooksCollector()
+        collector.add_new_book('Мои жизненные цели')
+        collector.set_book_genre('Мои жизненные цели', 'Комедии')
+        assert collector.get_book_genre('Мои жизненные цели') == 'Комедии'
+
+
+#Проверка получения словаря book_genre
+    def test_get_books_genre_add_dictionary(self):
+        collector = BooksCollector()
+        collector.add_new_book("Как получать зарплату 10тыс.р. в минуту")
+        collector.set_book_genre("Как получать зарплату 10тыс.р. в минуту", "Фантастика")
+
+        collector.add_new_book("Как стать миллионером ничего не умея")
+        collector.set_book_genre("Как стать миллионером ничего не умея", "Комедии")
+
+        assert collector.get_books_genre() == {"Как получать зарплату 10тыс.р. в минуту": "Фантастика", "Как стать миллионером ничего не умея": "Комедии"}
+
+
+    def test_get_books_for_children(self):
+        collector = BooksCollector()
+        collector.add_new_book("Улица разбитых фонарей")
+        collector.add_new_book("Приключения мумий тролля")
+    # Устанавливаем жанры для книг
+        collector.set_book_genre("Улица разбитых фонарей", "Детективы")
+        collector.set_book_genre("Приключения мумий тролля", "Мультфильмы")
+
+    # Проверяем, что возвращается только книга с жанром "Мультфильмы"
+        assert collector.get_books_for_children() == ["Приключения мумий тролля"]
+
+#Проверка добавления книги в избранное
+    def test_add_book_in_favorites(self):
+        collector = BooksCollector()
+        collector.add_new_book("Книга о любви")
+        collector.add_book_in_favorites("Книга о любви")
+        assert collector.get_list_of_favorites_books() == ["Книга о любви"]
+
+#Проверка удаления книги из избранного
+    def test_delete_book_from_favorites(self):
+        collector = BooksCollector()
+        collector.add_new_book("Любовь и ненависть")
+        collector.add_book_in_favorites("Любовь и ненависть")
+        assert len(collector.get_list_of_favorites_books()) == 1
+        collector.delete_book_from_favorites("Любовь и ненависть")
+        assert len(collector.get_list_of_favorites_books()) == 0
+
+ #Проверка получения списка избранных книг
+    def test_get_list_of_favorites_books(self):
+        collector = BooksCollector()
+        collector.add_new_book("Любовь и ненависть")
+        collector.add_new_book("Книга о любви")
+        collector.add_book_in_favorites("Любовь и ненависть")
+        collector.add_book_in_favorites("Книга о любви")
+        assert collector.get_list_of_favorites_books() == ["Любовь и ненависть", "Книга о любви"]
+
+#Проверка добавления книги отсутствующей в словаре
+def test_add_missing_book_in_favorites(self):
+    collector = BooksCollector()
+    collector.add_new_book("Книга о любви")
+    collector.add_book_in_favorites("Книга о котиках")
+    assert "Книга о котиках" not in collector.favorites
